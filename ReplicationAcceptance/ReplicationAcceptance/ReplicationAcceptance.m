@@ -38,6 +38,24 @@
 #import "ChangeTrackerDelegate.h"
 #import "ChangeTrackerNSURLProtocolTimedOut.h"
 #import "TDInternal.h"
+#import "CDTHTTPInterceptor.h"
+
+@interface CountingHttpInterceptor : NSObject <CDTHTTPInterceptor>
+
+@property int timesRequestIntercepted;
+
+@end
+
+@implementation CountingHttpInterceptor
+
+- (nonnull CDTHTTPInterceptorContext *)interceptRequestInContext:
+    (nonnull CDTHTTPInterceptorContext *)context
+{
+    self.timesRequestIntercepted++;
+    return context;
+}
+
+@end
 
 @interface ReplicationAcceptance () 
 
@@ -108,12 +126,14 @@ static NSUInteger largeRevTreeSize = 1500;
 
 -(CDTReplicator *) pullFromRemoteWithFilter:(NSString*)filterName params:(NSDictionary*)params
 {
+    CountingHttpInterceptor *interceptor = [[CountingHttpInterceptor alloc] init];
     CDTPullReplication *pull = [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
                                                                   target:self.datastore];
     
     pull.filter = filterName;
     pull.filterParams = params;
-    
+    [pull addInterceptor:interceptor];
+
     NSError *error;
     CDTReplicator *replicator =  [self.replicatorFactory oneWay:pull error:&error];
     XCTAssertNil(error, @"%@",error);
@@ -128,7 +148,9 @@ static NSUInteger largeRevTreeSize = 1500;
         [NSThread sleepForTimeInterval:1.0f];
         NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
     }
-    
+
+    XCTAssertGreaterThanOrEqual(interceptor.timesRequestIntercepted, 1);
+
     return replicator;
 }
 
