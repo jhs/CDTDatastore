@@ -150,6 +150,25 @@ static NSUInteger largeRevTreeSize = 1500;
     }
 
     XCTAssertGreaterThanOrEqual(interceptor.timesRequestIntercepted, 1);
+    int timesRequestIntercepted = interceptor.timesRequestIntercepted;
+
+    [pull clearInterceptors];
+
+    replicator = [self.replicatorFactory oneWay:pull error:&error];
+    XCTAssertNil(error, @"%@", error);
+    XCTAssertNotNil(replicator, @"CDTReplicator is nil");
+
+    NSLog(@"Replicating from %@", [pull.source absoluteString]);
+    if (![replicator startWithError:&error]) {
+        XCTFail(@"CDTReplicator -startWithError: %@", error);
+    }
+
+    while (replicator.isActive) {
+        [NSThread sleepForTimeInterval:1.0f];
+        NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
+    }
+
+    XCTAssertEqual(timesRequestIntercepted, interceptor.timesRequestIntercepted);
 
     return replicator;
 }
