@@ -133,6 +133,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonnull, nonatomic, readonly, strong) NSArray* httpInterceptors;
 
 - (void)addInterceptor:(nonnull NSObject<CDTHTTPInterceptor>*)interceptor;
+- (void)addInterceptors:(nonnull NSArray*)interceptors;
 - (void)clearInterceptors;
 
 NS_ASSUME_NONNULL_END
