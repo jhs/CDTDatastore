@@ -1465,12 +1465,16 @@ static NSUInteger largeRevTreeSize = 1500;
     delegate.changeBlock = ^(NSDictionary *change) {
         XCTFail(@"Should not be called");
     };
-    
-    TDChangeTracker *changeTracker = [[TDChangeTracker alloc] initWithDatabaseURL:self.primaryRemoteDatabaseURL
-                                                                             mode:kOneShot
-                                                                        conflicts:YES
-                                                                     lastSequence:nil
-                                                                           client:delegate];
+
+    CDTURLSession *session = [[CDTURLSession alloc] init];
+
+    TDChangeTracker *changeTracker =
+        [[TDChangeTracker alloc] initWithDatabaseURL:self.primaryRemoteDatabaseURL
+                                                mode:kOneShot
+                                           conflicts:YES
+                                        lastSequence:nil
+                                              client:delegate
+                                             session:session];
     changeTracker.limit = limitSize;
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
@@ -1548,11 +1552,13 @@ static NSUInteger largeRevTreeSize = 1500;
     };
     
     NSURL *url = [self sharedDemoURL];
+    CDTURLSession *session = [[CDTURLSession alloc] init];
     TDChangeTracker *changeTracker = [[TDChangeTracker alloc] initWithDatabaseURL:url
                                                                              mode:kOneShot
                                                                         conflicts:YES
                                                                      lastSequence:nil
-                                                                           client:delegate];
+                                                                           client:delegate
+                                                                          session:session];
     changeTracker.limit = limitSize;
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
@@ -1603,11 +1609,13 @@ static NSUInteger largeRevTreeSize = 1500;
     };
     
     NSURL *url = [NSURL URLWithString:@"https://mikerhodescloudant.cloudant.com/shared_todo_sample"];
+    CDTURLSession *session = [[CDTURLSession alloc] init];
     TDChangeTracker *changeTracker = [[TDChangeTracker alloc] initWithDatabaseURL:url
                                                                              mode:kOneShot
                                                                         conflicts:YES
                                                                      lastSequence:nil
-                                                                           client:delegate];
+                                                                           client:delegate
+                                                                          session:session];
     changeTracker.limit = limitSize;
     
     NSURLCredential *cred = [NSURLCredential credentialWithUser: [[self sharedDemoURL] user]
@@ -1655,12 +1663,14 @@ static NSUInteger largeRevTreeSize = 1500;
     };
     
     NSURL *url = [self badCredentialsDemoURL];
-    
+
+    CDTURLSession *session = [[CDTURLSession alloc] init];
     TDChangeTracker *changeTracker = [[TDChangeTracker alloc] initWithDatabaseURL:url
                                                                              mode:kOneShot
                                                                         conflicts:YES
                                                                      lastSequence:nil
-                                                                           client:delegate];
+                                                                           client:delegate
+                                                                          session:session];
     changeTracker.limit = limitSize;
 
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
