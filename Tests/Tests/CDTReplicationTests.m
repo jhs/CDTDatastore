@@ -26,6 +26,37 @@
 #import "TD_Revision.h"
 #import "TDPuller.h"
 #import "TDPusher.h"
+#import "AllNullResponseURLProtocol.h"
+
+@interface ChangesFeedRequestCheckInterceptor : NSObject <CDTHTTPInterceptor>
+
+@property (nonatomic) BOOL changesFeedRequestMade;
+
+@end
+
+@implementation ChangesFeedRequestCheckInterceptor
+
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        _changesFeedRequestMade = NO;
+    }
+    return self;
+}
+
+- (CDTHTTPInterceptorContext *)interceptRequestInContext:(CDTHTTPInterceptorContext *)context
+{
+    NSURL *url = context.request.URL;
+
+    if ([[url path] containsString:@"/_changes"]) {
+        self.changesFeedRequestMade = YES;
+    }
+
+    return context;
+}
+
+@end
 
 @interface CDTReplicationTests : CloudantSyncTests
 
@@ -33,6 +64,35 @@
 
 @implementation CDTReplicationTests
 
+- (void)testFiltersWithChangesFeed
+{
+    NSError *error;
+    NSString *remoteUrl = @"https://example.com";
+
+    [NSURLProtocol registerClass:[AllNullResponseURLProtocol class]];
+
+    CDTDatastore *tmp = [self.factory datastoreNamed:@"test_database" error:&error];
+    CDTPullReplication *pull =
+        [CDTPullReplication replicationWithSource:[NSURL URLWithString:remoteUrl] target:tmp];
+    ChangesFeedRequestCheckInterceptor *interceptor =
+        [[ChangesFeedRequestCheckInterceptor alloc] init];
+    [pull addInterceptor:interceptor];
+    CDTReplicatorFactory *replicatorFactory =
+        [[CDTReplicatorFactory alloc] initWithDatastoreManager:self.factory];
+
+    CDTReplicator *replicator = [replicatorFactory oneWay:pull error:&error];
+
+    [replicator startWithError:&error];
+
+    while (replicator.state != CDTReplicatorStateComplete &&
+           replicator.state != CDTReplicatorStateError) {
+        NSLog(@"Replicating......");
+        [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
+    }
+
+    XCTAssertTrue(interceptor.changesFeedRequestMade);
+    [NSURLProtocol unregisterClass:[AllNullResponseURLProtocol class]];
+}
 
 -(void)testReplicatorIsNilForNilDatastoreManager {
     
