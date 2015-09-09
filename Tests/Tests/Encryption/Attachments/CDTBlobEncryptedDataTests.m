@@ -18,6 +18,7 @@
 
 #import "CDTBlobEncryptedData+Internal.h"
 #import "CDTBlobEncryptedDataConstants.h"
+#import <CommonCrypto/CommonCryptor.h>
 
 #import "CDTHelperFixedKeyProvider.h"
 

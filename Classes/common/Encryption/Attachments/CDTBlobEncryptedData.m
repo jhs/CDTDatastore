@@ -16,6 +16,7 @@
 
 #import "CDTBlobEncryptedData.h"
 #import "CDTBlobEncryptedDataConstants.h"
+#import <CommonCrypto/CommonCryptor.h>
 
 #import "CDTBlobData.h"
 

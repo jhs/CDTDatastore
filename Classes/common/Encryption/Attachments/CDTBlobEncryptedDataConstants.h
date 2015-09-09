@@ -17,8 +17,6 @@
 #ifndef _CDTBlobEncryptedDataConstants_h
 #define _CDTBlobEncryptedDataConstants_h
 
-#import <CommonCrypto/CommonCryptor.h>
-
 // Version: where this value starts
 #define CDTBLOBENCRYPTEDDATA_VERSION_LOCATION 0
 
